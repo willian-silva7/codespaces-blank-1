@@ -5,6 +5,7 @@ using ContosoShop.Server.Data;
 using ContosoShop.Server.Services;
 using ContosoShop.Shared.Models;
 using System.Text.Json.Serialization;
+using GitHub.Copilot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +82,18 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 // Register order business logic service
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+// Register GitHub Copilot SDK client as a singleton
+builder.Services.AddSingleton<CopilotClient>(_ =>
+{
+    return new CopilotClient(new CopilotClientOptions
+    {
+        LogLevel = CopilotLogLevel.Info
+    });
+});
+
+// Register AI agent tools service
+builder.Services.AddScoped<SupportAgentTools>();
+
 // Configure CORS with explicit whitelist (T024s - Security hardened)
 builder.Services.AddCors(options =>
 {
@@ -94,6 +107,10 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Ensure CopilotClient is started
+var copilotClient = app.Services.GetRequiredService<CopilotClient>();
+await copilotClient.StartAsync();
 
 // Initialize database with sample data
 using (var scope = app.Services.CreateScope())
