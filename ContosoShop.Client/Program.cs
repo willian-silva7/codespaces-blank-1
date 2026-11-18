@@ -18,7 +18,10 @@ builder.Services.AddScoped(sp => new HttpClient
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
 
-// Register application services
+// Register application services   
+// Register AI support agent service
+builder.Services.AddScoped<SupportAgentService>( sp => 
+    new SupportAgentService(sp.GetRequiredService<HttpClient>()));
 builder.Services.AddScoped<IOrderService, OrderService>();
 
 await builder.Build().RunAsync();
